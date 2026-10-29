@@ -20,10 +20,22 @@ button,label{font:inherit;cursor:pointer}.primary{display:inline-block;backgroun
 .empty{grid-column:1/-1;border:1px dashed #ffffff2c;border-radius:17px;padding:28px;text-align:center;color:var(--muted);line-height:1.7}.empty b{color:white}
 .bottom{position:fixed;bottom:0;left:0;right:0;background:#100d1ced;border-top:1px solid #ffffff18;backdrop-filter:blur(20px);padding:11px 5%;z-index:10}.player{max-width:1120px;margin:auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}.now{display:flex;align-items:center;gap:10px;min-width:0}.mini{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#281344);display:grid;place-items:center}.now strong,.now small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.now strong{font-size:13px}.now small{font-size:11px;color:var(--muted);margin-top:3px}.controls{display:flex;align-items:center;gap:12px}.controls button{background:none;color:white;border:0;font-size:18px}.controls .play{background:white;color:#171020;width:38px;height:38px;border-radius:50%;font-size:15px}.progress{display:flex;align-items:center;gap:8px;justify-self:end;width:100%;max-width:260px;color:var(--muted);font-size:10px}.progress input{width:100%;accent-color:#a855f7}input[type=file]{display:none}
 @media(max-width:650px){main{padding:25px 5%}.hero{padding:21px}.hero-icon{font-size:55px;padding:0}.player{grid-template-columns:1fr auto;gap:8px}.progress{grid-column:1/-1;max-width:none}.bottom{padding:9px 5%}.controls{gap:7px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.auth-wrap{max-width:430px;margin:46px auto 28px;padding:0 5%}
+.auth-card{background:#151225;border:1px solid #ffffff18;border-radius:22px;padding:24px;box-shadow:0 18px 55px #0005}
+.auth-card h2{margin:7px 0;font-size:25px}.auth-card p{color:#aaa4bd;line-height:1.5;font-size:13px}
+.auth-card label.field{display:block;color:#d8d1e8;font-size:12px;margin:14px 0 6px}
+.auth-card input{width:100%;padding:12px;border-radius:11px;border:1px solid #ffffff20;background:#0d0b17;color:#fff;outline:none}
+.auth-actions{display:flex;gap:9px;margin-top:17px}.auth-actions button{flex:1}
+.auth-note{font-size:11px!important;color:#aaa4bd!important;margin-top:13px}
+#authError{color:#ff9bba!important;min-height:18px}
+#appMain{display:none}.signout{background:#ffffff12;color:white;border:1px solid #ffffff22;padding:8px 12px;border-radius:10px}
+
 </style></head>
 <body>
-<header><div class="brand"><div class="logo">AS</div><span>AS MUSIC <span style="color:#bd9aff">PRO</span></span></div><div class="tag">✦ SEM ANÚNCIOS</div></header>
-<main><div class="eyebrow">A tua música. Do teu jeito.</div><h1>O som que acompanha<br>o teu momento.</h1><p class="sub">A tua biblioteca musical num só lugar.</p>
+<header><div class="brand"><div class="logo">AS</div><span>AS MUSIC <span style="color:#bd9aff">PRO</span></span></div><div style="display:flex;align-items:center;gap:9px"><span class="tag">✦ SEM ANÚNCIOS</span><button id="signOut" class="signout" hidden>Sair</button></div></header>
+<section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo será gratuito. Para ativar as contas, precisamos primeiro de configurar o serviço seguro de autenticação.</p></div></section>
+<main id="appMain"><div class="eyebrow">A tua música. Do teu jeito.</div><h1>O som que acompanha<br>o teu momento.</h1><p class="sub">A tua biblioteca musical num só lugar.</p>
 <section class="hero"><div><div class="eyebrow">BEM-VINDO À AS MUSIC PRO</div><h2>A tua biblioteca começa aqui.</h2><p>Adiciona ficheiros de áudio guardados no teu dispositivo e cria a tua coleção pessoal.</p><label class="primary" for="audioFiles">＋ Adicionar músicas</label><input id="audioFiles" type="file" accept="audio/*" multiple></div><div class="hero-icon">🎧</div></section>
 <div class="head"><h3>A tua biblioteca</h3><span class="muted" id="count">0 músicas</span></div><div class="tools"><input id="search" class="search" placeholder="⌕  Pesquisar música ou artista..."><button id="clear" class="secondary">Limpar</button></div><div id="library" class="grid"><div class="empty">🎵<br><b>Ainda não tens músicas</b><br>Escolhe “Adicionar músicas” para começar.</div></div></main>
 <div class="bottom"><div class="player"><div class="now"><div class="mini">♫</div><div style="min-width:0"><strong id="trackName">Nenhuma música selecionada</strong><small id="artistName">AS Music Pro</small></div></div><div class="controls"><button id="prev" aria-label="Anterior">⏮</button><button class="play" id="toggle" aria-label="Reproduzir">▶</button><button id="next" aria-label="Seguinte">⏭</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="100" value="0"><span id="duration">0:00</span></div></div></div><audio id="audio"></audio>
@@ -37,4 +49,34 @@ document.querySelector('#toggle').onclick=()=>{if(current<0){play(0);return}if(a
 document.querySelector('#prev').onclick=()=>play(current-1);document.querySelector('#next').onclick=()=>play(current+1);audio.onended=()=>play(current+1);
 audio.ontimeupdate=()=>{document.querySelector('#seek').value=audio.duration?audio.currentTime/audio.duration*100:0;document.querySelector('#elapsed').textContent=fmt(audio.currentTime);document.querySelector('#duration').textContent=fmt(audio.duration)};
 document.querySelector('#seek').oninput=e=>{if(audio.duration)audio.currentTime=e.target.value/100*audio.duration};document.querySelector('#search').oninput=render;document.querySelector('#clear').onclick=()=>{document.querySelector('#search').value='';render()};render();
-</script></body></html>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* CONFIGURACAO: preencher com Project URL e anon/public key do projeto Supabase. Nunca colocar service_role key no navegador. */
+const SUPABASE_URL = "COLOCA_AQUI_A_SUPABASE_PROJECT_URL";
+const SUPABASE_ANON_KEY = "COLOCA_AQUI_A_SUPABASE_ANON_KEY";
+const authScreen = document.getElementById('authScreen');
+const appMain = document.getElementById('appMain');
+const authError = document.getElementById('authError');
+const signOutButton = document.getElementById('signOut');
+const configured = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('COLOCA_AQUI') && !SUPABASE_ANON_KEY.includes('COLOCA_AQUI');
+let supabaseClient = null;
+function showSignedIn(user){authScreen.style.display='none';appMain.style.display='block';signOutButton.hidden=false;document.querySelector('#artistName').textContent=user.email || 'Conta AS Music Pro';}
+function showSignedOut(){authScreen.style.display='block';appMain.style.display='none';signOutButton.hidden=true;}
+if(configured && window.supabase){supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);supabaseClient.auth.getSession().then(({data})=>{if(data.session)showSignedIn(data.session.user);else showSignedOut()});supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)showSignedIn(session.user);else showSignedOut()});}
+else {showSignedOut();authError.textContent='Autenticação ainda por configurar: precisamos criar o projeto Supabase.';}
+async function authAction(mode){
+ if(!supabaseClient){authError.textContent='Ainda falta configurar o Supabase. Não introduzas dados reais até essa configuração estar concluída.';return;}
+ const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;
+ authError.textContent='';
+ if(!email || password.length<6){authError.textContent='Introduz um e-mail válido e uma palavra-passe com pelo menos 6 caracteres.';return;}
+ const result=mode==='signup'?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});
+ if(result.error){authError.textContent=result.error.message;return;}
+ if(mode==='signup' && !result.data.session){authError.textContent='Conta criada! Confirma o teu e-mail para ativar o acesso.';}
+}
+document.getElementById('signIn').addEventListener('click',()=>authAction('signin'));
+document.getElementById('signUp').addEventListener('click',()=>authAction('signup'));
+signOutButton.addEventListener('click',async()=>{if(supabaseClient)await supabaseClient.auth.signOut();});
+</script>
+
+</body></html>
