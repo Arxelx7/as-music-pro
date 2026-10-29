@@ -34,7 +34,7 @@ button,label{font:inherit;cursor:pointer}.primary{display:inline-block;backgroun
 </style></head>
 <body>
 <header><div class="brand"><div class="logo">AS</div><span>AS MUSIC <span style="color:#bd9aff">PRO</span></span></div><div style="display:flex;align-items:center;gap:9px"><span class="tag">✦ SEM ANÚNCIOS</span><button id="signOut" class="signout" hidden>Sair</button></div></header>
-<section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo será gratuito. Para ativar as contas, precisamos primeiro de configurar o serviço seguro de autenticação.</p></div></section>
+<section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo é gratuito. Entra ou cria a tua conta para aceder à tua biblioteca.</p></div></section>
 <main id="appMain"><div class="eyebrow">A tua música. Do teu jeito.</div><h1>O som que acompanha<br>o teu momento.</h1><p class="sub">A tua biblioteca musical num só lugar.</p>
 <section class="hero"><div><div class="eyebrow">BEM-VINDO À AS MUSIC PRO</div><h2>A tua biblioteca começa aqui.</h2><p>Adiciona ficheiros de áudio guardados no teu dispositivo e cria a tua coleção pessoal.</p><label class="primary" for="audioFiles">＋ Adicionar músicas</label><input id="audioFiles" type="file" accept="audio/*" multiple></div><div class="hero-icon">🎧</div></section>
 <div class="head"><h3>A tua biblioteca</h3><span class="muted" id="count">0 músicas</span></div><div class="tools"><input id="search" class="search" placeholder="⌕  Pesquisar música ou artista..."><button id="clear" class="secondary">Limpar</button></div><div id="library" class="grid"><div class="empty">🎵<br><b>Ainda não tens músicas</b><br>Escolhe “Adicionar músicas” para começar.</div></div></main>
@@ -53,8 +53,8 @@ document.querySelector('#seek').oninput=e=>{if(audio.duration)audio.currentTime=
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* CONFIGURACAO: preencher com Project URL e anon/public key do projeto Supabase. Nunca colocar service_role key no navegador. */
-const SUPABASE_URL = "COLOCA_AQUI_A_SUPABASE_PROJECT_URL";
-const SUPABASE_ANON_KEY = "COLOCA_AQUI_A_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://anjfynilypvqnxzbfxxj.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_xhk-0QG5Z2RN5gG_aJNGFA_Q2_-rzLG";
 const authScreen = document.getElementById('authScreen');
 const appMain = document.getElementById('appMain');
 const authError = document.getElementById('authError');
@@ -64,7 +64,7 @@ let supabaseClient = null;
 function showSignedIn(user){authScreen.style.display='none';appMain.style.display='block';signOutButton.hidden=false;document.querySelector('#artistName').textContent=user.email || 'Conta AS Music Pro';}
 function showSignedOut(){authScreen.style.display='block';appMain.style.display='none';signOutButton.hidden=true;}
 if(configured && window.supabase){supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);supabaseClient.auth.getSession().then(({data})=>{if(data.session)showSignedIn(data.session.user);else showSignedOut()});supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)showSignedIn(session.user);else showSignedOut()});}
-else {showSignedOut();authError.textContent='Autenticação ainda por configurar: precisamos criar o projeto Supabase.';}
+else {showSignedOut();authError.textContent='Não foi possível ligar ao serviço de autenticação. Verifica a configuração do projeto.';}
 async function authAction(mode){
  if(!supabaseClient){authError.textContent='Ainda falta configurar o Supabase. Não introduzas dados reais até essa configuração estar concluída.';return;}
  const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;
