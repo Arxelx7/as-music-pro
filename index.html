@@ -37,7 +37,7 @@ button,label{font:inherit;cursor:pointer}.primary{display:inline-block;backgroun
 <section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo é gratuito. Entra ou cria a tua conta para aceder à tua biblioteca.</p></div></section>
 <main id="appMain"><div class="eyebrow">A tua música. Do teu jeito.</div><h1>O som que acompanha<br>o teu momento.</h1><p class="sub">A tua biblioteca musical num só lugar.</p>
 <section class="hero"><div><div class="eyebrow">BEM-VINDO À AS MUSIC PRO</div><h2>A tua biblioteca começa aqui.</h2><p>Adiciona ficheiros de áudio guardados no teu dispositivo e cria a tua coleção pessoal.</p><label class="primary" for="audioFiles">＋ Adicionar músicas</label><input id="audioFiles" type="file" accept="audio/*" multiple></div><div class="hero-icon">🎧</div></section>
-<section style="margin:30px 0"><div class="head"><h3>Descobrir música online</h3><span class="muted">Pesquisa YouTube</span></div><div class="tools"><input id="onlineSearch" class="search" placeholder="⌕  Pesquisa músicas ou artistas online..."><button id="onlineSearchBtn" class="primary">Pesquisar</button></div><div id="youtubePlayer" style="display:none;margin:0 0 16px;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:16/9"><iframe id="youtubeFrame" title="Leitor oficial do YouTube" width="100%" height="100%" style="border:0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><div id="onlineResults" class="grid"><div class="empty">🌐<br><b>Descobre novas músicas</b><br>Pesquisa por nome de música ou artista.</div></div></section>
+<section style="margin:30px 0"><div class="head"><h3>Descobrir música online</h3><span class="muted">Áudio online</span></div><div class="tools"><input id="onlineSearch" class="search" placeholder="⌕  Pesquisa músicas ou artistas..."><button id="onlineSearchBtn" class="primary">Pesquisar</button></div><div id="youtubePlayer" style="display:none;margin:0 0 16px;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:16/9"><iframe id="youtubeFrame" title="Leitor oficial do YouTube" width="100%" height="100%" style="border:0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><div id="onlineResults" class="grid"><div class="empty">🌐<br><b>Descobre novas músicas</b><br>Pesquisa por nome de música ou artista.</div></div></section>
 <div class="head"><h3>A tua biblioteca</h3><span class="muted" id="count">0 músicas</span></div><div class="tools"><input id="search" class="search" placeholder="⌕  Pesquisar na tua biblioteca..."><button id="clear" class="secondary">Limpar</button></div><div id="library" class="grid"><div class="empty">🎵<br><b>Ainda não tens músicas</b><br>Escolhe “Adicionar músicas” para começar.</div></div></main>
 <div class="bottom"><div class="player"><div class="now"><div class="mini">♫</div><div style="min-width:0"><strong id="trackName">Nenhuma música selecionada</strong><small id="artistName">AS Music Pro</small></div></div><div class="controls"><button id="prev" aria-label="Anterior">⏮</button><button class="play" id="toggle" aria-label="Reproduzir">▶</button><button id="next" aria-label="Seguinte">⏭</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" type="range" min="0" max="100" value="0"><span id="duration">0:00</span></div></div></div><audio id="audio"></audio>
 <script>
@@ -45,35 +45,45 @@ const audio=document.querySelector('#audio'),input=document.querySelector('#audi
 const symbols=['🎧','🎹','🎸','🎤','🎼','🎷','🥁','🎺'];const fmt=s=>Number.isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
 function render(){const q=document.querySelector('#search').value.toLowerCase();const shown=tracks.map((t,i)=>({...t,i})).filter(t=>(t.name+' '+t.artist).toLowerCase().includes(q));document.querySelector('#count').textContent=tracks.length+' música(s)';library.innerHTML='';if(!shown.length){library.innerHTML='<div class="empty">🎵<br><b>'+(tracks.length?'Nenhum resultado':'A tua biblioteca está vazia')+'</b><br>'+(tracks.length?'Tenta outra pesquisa.':'Adiciona ficheiros de áudio do teu dispositivo.')+'</div>';return}shown.forEach(t=>{const c=document.createElement('article');c.className='card';c.innerHTML='<div class="cover">'+symbols[t.i%symbols.length]+'</div><strong></strong><small></small><button>▶ Reproduzir</button>';c.querySelector('strong').textContent=t.name;c.querySelector('small').textContent=t.artist;c.querySelector('button').onclick=()=>play(t.i);library.append(c)})}
 function play(i){if(!tracks.length)return;document.querySelector('#youtubeFrame').src='';document.querySelector('#youtubePlayer').style.display='none';document.querySelector('.bottom').style.display='block';current=(i+tracks.length)%tracks.length;audio.src=tracks[current].url;audio.play();document.querySelector('#trackName').textContent=tracks[current].name;document.querySelector('#artistName').textContent=tracks[current].artist;document.querySelector('#toggle').textContent='Ⅱ'}
-const YOUTUBE_API='https://as-music-pro-api.arxelsopaarxel.workers.dev';
-let youtubeTracks=[];
-function playYouTube(t){audio.pause();audio.removeAttribute('src');audio.load();document.querySelector('#youtubeFrame').src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(t.videoId)+'?autoplay=1&rel=0';document.querySelector('#youtubePlayer').style.display='block';document.querySelector('.bottom').style.display='none';document.querySelector('#trackName').textContent=t.title;document.querySelector('#artistName').textContent=t.channelTitle+' · YouTube';}
+const AUDIUS_API='https://discoveryprovider.audius.co/v1';
 let onlineTracks=[];
-function playOnline(t){current=-1;audio.src=AUDIUS_API+'/tracks/'+encodeURIComponent(t.id)+'/stream?app_name=ASMusicPro';audio.play().catch(()=>{document.querySelector('#onlineResults').insertAdjacentHTML('afterbegin','<div class="empty">Não foi possível iniciar esta faixa. Tenta outra música.</div>')});document.querySelector('#trackName').textContent=t.title||'Música';document.querySelector('#artistName').textContent=(t.user&&t.user.name)||'Audius';document.querySelector('#toggle').textContent='Ⅱ'}
+function playOnline(t){
+ current=-1;
+ document.querySelector('#youtubeFrame').src='';
+ document.querySelector('#youtubePlayer').style.display='none';
+ document.querySelector('.bottom').style.display='block';
+ audio.src=AUDIUS_API+'/tracks/'+encodeURIComponent(t.id)+'/stream?app_name=ASMusicPro';
+ audio.play().catch(()=>{document.querySelector('#onlineResults').insertAdjacentHTML('afterbegin','<div class="empty">Não foi possível iniciar esta faixa. Tenta outra música.</div>')});
+ document.querySelector('#trackName').textContent=t.title||'Música';
+ document.querySelector('#artistName').textContent=(t.user&&t.user.name)||'Artista independente';
+ document.querySelector('#toggle').textContent='Ⅱ';
+}
 async function searchOnline(){
  const q=document.querySelector('#onlineSearch').value.trim();
  const out=document.querySelector('#onlineResults');
  const btn=document.querySelector('#onlineSearchBtn');
  if(!q){out.innerHTML='<div class="empty">Escreve o nome de uma música ou artista para pesquisar.</div>';return}
  btn.disabled=true;btn.textContent='A pesquisar...';
- out.innerHTML='<div class="empty">A procurar no YouTube...</div>';
+ out.innerHTML='<div class="empty">A procurar faixas disponíveis para reprodução...</div>';
  try{
-  const res=await fetch(YOUTUBE_API+'/search?q='+encodeURIComponent(q));
+  const res=await fetch(AUDIUS_API+'/tracks/search?query='+encodeURIComponent(q)+'&limit=24');
+  if(!res.ok)throw new Error('HTTP '+res.status);
   const json=await res.json();
-  if(!res.ok)throw new Error(json.details||json.error||'Erro na pesquisa');
-  youtubeTracks=Array.isArray(json.results)?json.results:[];
+  onlineTracks=Array.isArray(json.data)?json.data:[];
   out.innerHTML='';
-  if(!youtubeTracks.length){out.innerHTML='<div class="empty">Não encontrámos resultados. Experimenta outro nome.</div>';return}
-  youtubeTracks.forEach(t=>{
+  if(!onlineTracks.length){out.innerHTML='<div class="empty">Não encontrámos faixas disponíveis. Experimenta outro nome.</div>';return}
+  onlineTracks.forEach(t=>{
    const card=document.createElement('article');card.className='card';
    const cover=document.createElement('div');cover.className='cover';
-   cover.style.backgroundImage='url("'+t.thumbnail+'")';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';
-   const title=document.createElement('strong');title.textContent=t.title;
-   const artist=document.createElement('small');artist.textContent=t.channelTitle+' · YouTube';
-   const playBtn=document.createElement('button');playBtn.textContent='▶ Reproduzir no YouTube';playBtn.onclick=()=>playYouTube(t);
+   const art=t.artwork&&(t.artwork['480x480']||t.artwork['150x150']||t.artwork['1000x1000']);
+   if(art){cover.style.backgroundImage='url("'+art+'")';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';cover.textContent=''}
+   else cover.textContent='🎵';
+   const title=document.createElement('strong');title.textContent=t.title||'Sem título';
+   const artist=document.createElement('small');artist.textContent=(t.user&&t.user.name)||'Artista desconhecido';
+   const playBtn=document.createElement('button');playBtn.textContent='▶ Ouvir áudio';playBtn.onclick=()=>playOnline(t);
    card.append(cover,title,artist,playBtn);out.append(card);
   });
- }catch(err){out.innerHTML='<div class="empty"><b>Não foi possível pesquisar.</b><br>'+String(err.message||'Verifica a ligação e tenta novamente.')+'</div>'}
+ }catch(err){out.innerHTML='<div class="empty"><b>Não foi possível pesquisar agora.</b><br>Verifica a ligação à internet e tenta novamente.</div>'}
  finally{btn.disabled=false;btn.textContent='Pesquisar'}
 }
 document.querySelector('#onlineSearchBtn').addEventListener('click',searchOnline);
