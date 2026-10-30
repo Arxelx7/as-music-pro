@@ -30,10 +30,14 @@ button,label{font:inherit;cursor:pointer}.primary{display:inline-block;backgroun
 .auth-note{font-size:11px!important;color:#aaa4bd!important;margin-top:13px}
 #authError{color:#ff9bba!important;min-height:18px}
 #appMain{display:none}.signout{background:#ffffff12;color:white;border:1px solid #ffffff22;padding:8px 12px;border-radius:10px}
+.update-notice{position:fixed;top:82px;left:50%;transform:translateX(-50%);width:min(92%,460px);z-index:30;display:none;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid #a78bfa66;border-radius:14px;background:#211735;box-shadow:0 12px 35px #0008}
+.update-notice p{margin:0;color:#f8f6ff;font-size:13px;line-height:1.4}
+.update-notice button{flex-shrink:0;background:#a855f7;color:white;border:0;border-radius:9px;padding:9px 12px;font-weight:750}
 
 </style></head>
 <body>
 <header><div class="brand"><div class="logo">AS</div><span>AS MUSIC <span style="color:#bd9aff">PRO</span></span></div><div style="display:flex;align-items:center;gap:9px"><span class="tag">✦ SEM ANÚNCIOS</span><button id="signOut" class="signout" hidden>Sair</button></div></header>
+<div id="updateNotice" class="update-notice" role="status" aria-live="polite"><p>✨ Há uma nova versão do AS Music Pro pronta.</p><button id="updateNow" type="button">Atualizar</button></div>
 <section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><button id="forgotPassword" type="button" style="display:block;margin-top:10px;padding:0;border:0;background:none;color:#c4a8ff;font-size:12px;text-decoration:underline">Esqueci a senha</button><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo é gratuito. Entra ou cria a tua conta para aceder à tua biblioteca.</p></div></section>
 <main id="appMain"><div class="eyebrow">A tua música. Do teu jeito.</div><h1>O som que acompanha<br>o teu momento.</h1><p class="sub">A tua biblioteca musical num só lugar.</p>
 <section class="hero"><div><div class="eyebrow">BEM-VINDO À AS MUSIC PRO</div><h2>A tua biblioteca começa aqui.</h2><p>Adiciona ficheiros de áudio guardados no teu dispositivo e cria a tua coleção pessoal.</p><label class="primary" for="audioFiles">＋ Adicionar músicas</label><input id="audioFiles" type="file" accept="audio/*" multiple></div><div class="hero-icon">🎧</div></section>
@@ -134,5 +138,34 @@ document.getElementById('signUp').addEventListener('click',()=>authAction('signu
 signOutButton.addEventListener('click',async()=>{if(supabaseClient)await supabaseClient.auth.signOut();});
 </script>
 
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA:",err)));}</script>
+<script>
+if("serviceWorker" in navigator){
+ window.addEventListener("load",async()=>{
+  const notice=document.getElementById("updateNotice");
+  const updateButton=document.getElementById("updateNow");
+  let hadController=!!navigator.serviceWorker.controller;
+  let updateReady=false;
+  const showNotice=()=>{notice.style.display="flex";};
+  updateButton.addEventListener("click",()=>window.location.reload());
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+   if(hadController && updateReady)showNotice();
+   hadController=true;
+  });
+  try{
+   const registration=await navigator.serviceWorker.register("./sw.js");
+   if(registration.waiting && hadController){updateReady=true;showNotice();}
+   registration.addEventListener("updatefound",()=>{
+    const worker=registration.installing;
+    if(!worker)return;
+    worker.addEventListener("statechange",()=>{
+     if(worker.state==="installed" && hadController){updateReady=true;showNotice();}
+    });
+   });
+   document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible")registration.update().catch(()=>{});
+   });
+  }catch(err){console.warn("PWA:",err);}
+ });
+}
+</script>
 </body></html>
