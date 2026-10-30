@@ -64,25 +64,22 @@ async function searchOnline(){
  const btn=document.querySelector('#onlineSearchBtn');
  if(!q){out.innerHTML='<div class="empty">Escreve o nome de uma música ou artista para pesquisar.</div>';return}
  btn.disabled=true;btn.textContent='A pesquisar...';
- out.innerHTML='<div class="empty">A procurar em vários catálogos de música...</div>';
+ out.innerHTML='<div class="empty">A procurar músicas no Audius...</div>';
  try{
-  const requests=await Promise.allSettled([
-   fetch(AUDIUS_API+'/tracks/search?query='+encodeURIComponent(q)+'&limit=20').then(r=>{if(!r.ok)throw new Error('Audius');return r.json()}),
-   fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&entity=song&limit=20').then(r=>{if(!r.ok)throw new Error('Apple');return r.json()})
-  ]);
-  const audiusData=requests[0].status==='fulfilled'&&Array.isArray(requests[0].value.data)?requests[0].value.data.map(t=>({id:t.id,title:t.title,artist:(t.user&&t.user.name)||'Artista independente',artwork:t.artwork&&(t.artwork['480x480']||t.artwork['150x150']||t.artwork['1000x1000']),source:'Audius'})):[];
-  const appleData=requests[1].status==='fulfilled'&&Array.isArray(requests[1].value.results)?requests[1].value.results.filter(t=>t.previewUrl).map(t=>({id:String(t.trackId),title:t.trackName,artist:t.artistName,artwork:t.artworkUrl100,previewUrl:t.previewUrl,source:'Apple Music · prévia'})):[];
-  onlineTracks=[...audiusData,...appleData];
+  const response=await fetch(AUDIUS_API+'/tracks/search?query='+encodeURIComponent(q)+'&limit=20');
+  if(!response.ok)throw new Error('Audius');
+  const data=await response.json();
+  onlineTracks=Array.isArray(data.data)?data.data.map(t=>({id:t.id,title:t.title,artist:(t.user&&t.user.name)||'Artista independente',artwork:t.artwork&&(t.artwork['480x480']||t.artwork['150x150']||t.artwork['1000x1000']),source:'Audius'})):[];
   out.innerHTML='';
-  if(!onlineTracks.length){out.innerHTML='<div class="empty">Não encontrámos faixas disponíveis. Experimenta outro nome.</div>';return}
+  if(!onlineTracks.length){out.innerHTML='<div class="empty">Não encontrámos faixas disponíveis no Audius. Experimenta outro nome.</div>';return}
   onlineTracks.forEach(t=>{
    const card=document.createElement('article');card.className='card';
    const cover=document.createElement('div');cover.className='cover';
    if(t.artwork){cover.style.backgroundImage='url("'+t.artwork+'")';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';cover.textContent=''}
    else cover.textContent='🎵';
    const title=document.createElement('strong');title.textContent=t.title||'Sem título';
-   const artist=document.createElement('small');artist.textContent=t.artist+' · '+t.source;
-   const playBtn=document.createElement('button');playBtn.textContent=t.previewUrl?'▶ Ouvir prévia':'▶ Ouvir áudio';playBtn.onclick=()=>playOnline(t);
+   const artist=document.createElement('small');artist.textContent=t.artist+' · Audius';
+   const playBtn=document.createElement('button');playBtn.textContent='▶ Ouvir áudio';playBtn.onclick=()=>playOnline(t);
    card.append(cover,title,artist,playBtn);out.append(card);
   });
  }catch(err){out.innerHTML='<div class="empty"><b>Não foi possível pesquisar agora.</b><br>Verifica a ligação à internet e tenta novamente.</div>'}
