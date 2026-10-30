@@ -48,8 +48,34 @@ function play(i){if(!tracks.length)return;document.querySelector('#youtubeFrame'
 const YOUTUBE_API='https://as-music-pro-api.arxelsopaarxel.workers.dev';\nlet youtubeTracks=[];\nfunction playYouTube(t){audio.pause();audio.removeAttribute('src');audio.load();document.querySelector('#youtubeFrame').src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(t.videoId)+'?autoplay=1&rel=0';document.querySelector('#youtubePlayer').style.display='block';document.querySelector('.bottom').style.display='none';document.querySelector('#trackName').textContent=t.title;document.querySelector('#artistName').textContent=t.channelTitle+' · YouTube';}
 let onlineTracks=[];
 function playOnline(t){current=-1;audio.src=AUDIUS_API+'/tracks/'+encodeURIComponent(t.id)+'/stream?app_name=ASMusicPro';audio.play().catch(()=>{document.querySelector('#onlineResults').insertAdjacentHTML('afterbegin','<div class="empty">Não foi possível iniciar esta faixa. Tenta outra música.</div>')});document.querySelector('#trackName').textContent=t.title||'Música';document.querySelector('#artistName').textContent=(t.user&&t.user.name)||'Audius';document.querySelector('#toggle').textContent='Ⅱ'}
-async function searchOnline(){const q=document.querySelector('#onlineSearch').value.trim(),out=document.querySelector('#onlineResults'),btn=document.querySelector('#onlineSearchBtn');if(!q){out.innerHTML='<div class="empty">Escreve o nome de uma música ou artista para pesquisar.</div>';return}btn.disabled=true;btn.textContent='A pesquisar...';out.innerHTML='<div class="empty">A procurar no YouTube...</div>';try{const res=await fetch(YOUTUBE_API+'/search?q='+encodeURIComponent(q));const json=await res.json();if(!res.ok)throw new Error(json.details||json.error||'Erro na pesquisa');youtubeTracks=Array.isArray(json.results)?json.results:[];out.innerHTML='';if(!youtubeTracks.length){out.innerHTML='<div class="empty">Não encontrámos resultados. Experimenta outro nome.</div>';return}youtubeTracks.forEach(t=>{const card=document.createElement('article');card.className='card';const cover=document.createElement('div');cover.className='cover';cover.style.backgroundImage='url("'+t.thumbnail+'")';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';cover.textContent='';const title=document.createElement('strong');title.textContent=t.title;const artist=document.createElement('small');artist.textContent=t.channelTitle+' · YouTube';const playBtn=document.createElement('button');playBtn.textContent='▶ Reproduzir no YouTube';playBtn.onclick=()=>playYouTube(t);card.append(cover,title,artist,playBtn);out.append(card)})}catch(err){out.innerHTML='<div class="empty"><b>Não foi possível pesquisar.</b><br>'+String(err.message||'Verifica a ligação e tenta novamente.')+'</div>'}finally{btn.disabled=false;btn.textContent='Pesquisar'}}\ndocument.querySelector('#onlineSearchBtn');if(!q){out.innerHTML='<div class="empty">Escreve o nome de uma música ou artista para pesquisar.</div>';return}btn.disabled=true;btn.textContent='A pesquisar...';out.innerHTML='<div class="empty">A procurar músicas no catálogo online...</div>';try{const url=AUDIUS_API+'/tracks/search?query='+encodeURIComponent(q)+'&limit=24';const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);const json=await res.json();onlineTracks=Array.isArray(json.data)?json.data:[];out.innerHTML='';if(!onlineTracks.length){out.innerHTML='<div class="empty">Não encontrámos resultados. Experimenta outro nome.</div>';return}onlineTracks.forEach(t=>{const card=document.createElement('article');card.className='card';const cover=document.createElement('div');cover.className='cover';const art=t.artwork&&(t.artwork['150x150']||t.artwork['480x480']||t.artwork['1000x1000']);if(art){cover.style.backgroundImage='url("'+art+'")';cover.style.backgroundSize='cover';cover.textContent=''}else cover.textContent='🎵';const title=document.createElement('strong');title.textContent=t.title||'Sem título';const artist=document.createElement('small');artist.textContent=(t.user&&t.user.name)||'Artista desconhecido';const playBtn=document.createElement('button');playBtn.textContent='▶ Reproduzir';playBtn.onclick=()=>playOnline(t);card.append(cover,title,artist,playBtn);out.append(card)})}catch(err){out.innerHTML='<div class="empty"><b>Não foi possível pesquisar agora.</b><br>Verifica a ligação à internet e tenta novamente.</div>'}finally{btn.disabled=false;btn.textContent='Pesquisar'}}
-document.querySelector('#onlineSearchBtn').addEventListener('click',searchOnline);document.querySelector('#onlineSearch').addEventListener('keydown',e=>{if(e.key==='Enter')searchOnline()});
+async function searchOnline(){
+ const q=document.querySelector('#onlineSearch').value.trim();
+ const out=document.querySelector('#onlineResults');
+ const btn=document.querySelector('#onlineSearchBtn');
+ if(!q){out.innerHTML='<div class="empty">Escreve o nome de uma música ou artista para pesquisar.</div>';return}
+ btn.disabled=true;btn.textContent='A pesquisar...';
+ out.innerHTML='<div class="empty">A procurar no YouTube...</div>';
+ try{
+  const res=await fetch(YOUTUBE_API+'/search?q='+encodeURIComponent(q));
+  const json=await res.json();
+  if(!res.ok)throw new Error(json.details||json.error||'Erro na pesquisa');
+  youtubeTracks=Array.isArray(json.results)?json.results:[];
+  out.innerHTML='';
+  if(!youtubeTracks.length){out.innerHTML='<div class="empty">Não encontrámos resultados. Experimenta outro nome.</div>';return}
+  youtubeTracks.forEach(t=>{
+   const card=document.createElement('article');card.className='card';
+   const cover=document.createElement('div');cover.className='cover';
+   cover.style.backgroundImage='url("'+t.thumbnail+'")';cover.style.backgroundSize='cover';cover.style.backgroundPosition='center';
+   const title=document.createElement('strong');title.textContent=t.title;
+   const artist=document.createElement('small');artist.textContent=t.channelTitle+' · YouTube';
+   const playBtn=document.createElement('button');playBtn.textContent='▶ Reproduzir no YouTube';playBtn.onclick=()=>playYouTube(t);
+   card.append(cover,title,artist,playBtn);out.append(card);
+  });
+ }catch(err){out.innerHTML='<div class="empty"><b>Não foi possível pesquisar.</b><br>'+String(err.message||'Verifica a ligação e tenta novamente.')+'</div>'}
+ finally{btn.disabled=false;btn.textContent='Pesquisar'}
+}
+document.querySelector('#onlineSearchBtn').addEventListener('click',searchOnline);
+document.querySelector('#onlineSearch').addEventListener('keydown',e=>{if(e.key==='Enter')searchOnline()});
 input.onchange=e=>{[...e.target.files].forEach(f=>tracks.push({name:f.name.replace(/\.[^.]+$/,''),artist:'Ficheiro local',url:URL.createObjectURL(f)}));render();input.value=''};
 document.querySelector('#toggle').onclick=()=>{if(!audio.src){if(tracks.length)play(0);return}if(audio.paused){audio.play();document.querySelector('#toggle').textContent='Ⅱ'}else{audio.pause();document.querySelector('#toggle').textContent='▶'}};
 document.querySelector('#prev').onclick=()=>play(current-1);document.querySelector('#next').onclick=()=>play(current+1);audio.onended=()=>play(current+1);
