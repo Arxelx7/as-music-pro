@@ -34,7 +34,7 @@ button,label{font:inherit;cursor:pointer}.primary{display:inline-block;backgroun
 </style></head>
 <body>
 <header><div class="brand"><div class="logo">AS</div><span>AS MUSIC <span style="color:#bd9aff">PRO</span></span></div><div style="display:flex;align-items:center;gap:9px"><span class="tag">✦ SEM ANÚNCIOS</span><button id="signOut" class="signout" hidden>Sair</button></div></header>
-<section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo é gratuito. Entra ou cria a tua conta para aceder à tua biblioteca.</p></div></section>
+<section id="authScreen" class="auth-wrap"><div class="auth-card"><div class="eyebrow">AS MUSIC PRO · ACESSO GRATUITO</div><h2 id="authTitle">Entra no teu mundo musical.</h2><p id="authSubtitle">Cria uma conta para guardar as tuas playlists e favoritos.</p><label class="field" for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="teuemail@exemplo.com"><label class="field" for="authPassword">Palavra-passe</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Pelo menos 6 caracteres"><button id="forgotPassword" type="button" style="display:block;margin-top:10px;padding:0;border:0;background:none;color:#c4a8ff;font-size:12px;text-decoration:underline">Esqueci a senha</button><div class="auth-actions"><button id="signIn" class="primary">Entrar</button><button id="signUp" class="secondary">Criar conta</button></div><p id="authError"></p><p class="auth-note">O registo é gratuito. Entra ou cria a tua conta para aceder à tua biblioteca.</p></div></section>
 <main id="appMain"><div class="eyebrow">A tua música. Do teu jeito.</div><h1>O som que acompanha<br>o teu momento.</h1><p class="sub">A tua biblioteca musical num só lugar.</p>
 <section class="hero"><div><div class="eyebrow">BEM-VINDO À AS MUSIC PRO</div><h2>A tua biblioteca começa aqui.</h2><p>Adiciona ficheiros de áudio guardados no teu dispositivo e cria a tua coleção pessoal.</p><label class="primary" for="audioFiles">＋ Adicionar músicas</label><input id="audioFiles" type="file" accept="audio/*" multiple></div><div class="hero-icon">🎧</div></section>
 <section style="margin:30px 0"><div class="head"><h3>Descobrir música online</h3><span class="muted">Pesquisa YouTube</span></div><div class="tools"><input id="onlineSearch" class="search" placeholder="⌕  Pesquisa músicas ou artistas online..."><button id="onlineSearchBtn" class="primary">Pesquisar</button></div><div id="youtubePlayer" style="display:none;margin:0 0 16px;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:16/9"><iframe id="youtubeFrame" title="Leitor oficial do YouTube" width="100%" height="100%" style="border:0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><div id="onlineResults" class="grid"><div class="empty">🌐<br><b>Descobre novas músicas</b><br>Pesquisa por nome de música ou artista.</div></div></section>
@@ -91,12 +91,35 @@ const authScreen = document.getElementById('authScreen');
 const appMain = document.getElementById('appMain');
 const authError = document.getElementById('authError');
 const signOutButton = document.getElementById('signOut');
+const forgotPasswordButton = document.getElementById('forgotPassword');
 const configured = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('COLOCA_AQUI') && !SUPABASE_ANON_KEY.includes('COLOCA_AQUI');
 let supabaseClient = null;
 function showSignedIn(user){authScreen.style.display='none';appMain.style.display='block';signOutButton.hidden=false;document.querySelector('#artistName').textContent=user.email || 'Conta AS Music Pro';}
 function showSignedOut(){authScreen.style.display='block';appMain.style.display='none';signOutButton.hidden=true;}
-if(configured && window.supabase){supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);supabaseClient.auth.getSession().then(({data})=>{if(data.session)showSignedIn(data.session.user);else showSignedOut()});supabaseClient.auth.onAuthStateChange((_event,session)=>{if(session)showSignedIn(session.user);else showSignedOut()});}
+if(configured && window.supabase){supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);supabaseClient.auth.getSession().then(({data})=>{if(data.session)showSignedIn(data.session.user);else showSignedOut()});supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='PASSWORD_RECOVERY'){showPasswordRecovery();return;}if(session)showSignedIn(session.user);else showSignedOut()});}
 else {showSignedOut();authError.textContent='Não foi possível ligar ao serviço de autenticação. Verifica a configuração do projeto.';}
+function showPasswordRecovery(){
+ authScreen.style.display='block';appMain.style.display='none';signOutButton.hidden=true;
+ document.getElementById('authTitle').textContent='Cria uma nova senha';
+ document.getElementById('authSubtitle').textContent='Escolhe uma nova palavra-passe para a tua conta.';
+ document.getElementById('authPassword').style.display='none';
+ forgotPasswordButton.style.display='none';
+ document.querySelector('.auth-actions').style.display='none';
+ let field=document.getElementById('newPassword');
+ if(!field){field=document.createElement('input');field.id='newPassword';field.type='password';field.placeholder='Nova palavra-passe (mínimo 6 caracteres)';field.autocomplete='new-password';field.style.cssText='width:100%;padding:12px;margin-top:14px;border-radius:11px;border:1px solid #ffffff20;background:#0d0b17;color:#fff';document.querySelector('.auth-card').insertBefore(field,authError);}
+ let save=document.getElementById('saveNewPassword');
+ if(!save){save=document.createElement('button');save.id='saveNewPassword';save.className='primary';save.textContent='Guardar nova senha';save.style.cssText='width:100%;margin-top:12px';document.querySelector('.auth-card').insertBefore(save,authError);save.addEventListener('click',async()=>{const password=field.value;if(password.length<6){authError.textContent='A nova senha deve ter pelo menos 6 caracteres.';return;}const {error}=await supabaseClient.auth.updateUser({password});if(error){authError.textContent=error.message;return;}authError.textContent='Senha atualizada com sucesso. Já podes entrar!';field.remove();save.remove();document.getElementById('authPassword').style.display='block';forgotPasswordButton.style.display='block';document.querySelector('.auth-actions').style.display='flex';document.getElementById('authTitle').textContent='Entra no teu mundo musical.';document.getElementById('authSubtitle').textContent='Inicia sessão para aceder à tua biblioteca.';});}
+ authError.textContent='';
+}
+forgotPasswordButton.addEventListener('click',async()=>{
+ if(!supabaseClient){authError.textContent='O serviço de autenticação não está disponível.';return;}
+ const email=document.getElementById('authEmail').value.trim();
+ if(!email){authError.textContent='Introduz primeiro o teu e-mail para receberes o link de recuperação.';return;}
+ forgotPasswordButton.disabled=true;authError.textContent='A enviar o link de recuperação...';
+ const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+ authError.textContent=error?error.message:'Se existir uma conta com esse e-mail, receberás um link para criar uma nova senha. Verifica também a pasta de spam.';
+ forgotPasswordButton.disabled=false;
+});
 async function authAction(mode){
  if(!supabaseClient){authError.textContent='Ainda falta configurar o Supabase. Não introduzas dados reais até essa configuração estar concluída.';return;}
  const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value;
