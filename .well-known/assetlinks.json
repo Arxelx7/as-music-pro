@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.arxelx7.twa",
+    "sha256_cert_fingerprints": ["C5:93:02:41:C6:1D:01:C7:FB:39:F7:82:8A:5C:0E:E5:AD:1D:C1:70:03:BC:C8:3A:97:9E:43:60:8D:E5:4B:45"]
+  }
+}]
