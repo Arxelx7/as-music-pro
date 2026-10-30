@@ -1,0 +1,21 @@
+{
+  "id": "/as-music-pro/",
+  "name": "AS Music Pro",
+  "short_name": "AS Music",
+  "description": "A tua música num só lugar.",
+  "lang": "pt",
+  "start_url": "/as-music-pro/",
+  "scope": "/as-music-pro/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090812",
+  "theme_color": "#090812",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
