@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#090812"><title>AS Music Pro</title>
+<meta name="theme-color" content="#090812"><meta name="description" content="AS Music Pro — a tua música num só lugar."><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="AS Music Pro"><title>AS Music Pro</title>
 <style>
 :root{color-scheme:dark;--bg:#090812;--panel:#151225;--panel2:#201a35;--purple:#965cff;--muted:#aaa4bd;--white:#f8f6ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 82% -8%,#3b205d 0,transparent 34%),var(--bg);color:var(--white);font-family:Inter,system-ui,Arial,sans-serif;padding-bottom:112px}
@@ -111,4 +111,5 @@ document.getElementById('signUp').addEventListener('click',()=>authAction('signu
 signOutButton.addEventListener('click',async()=>{if(supabaseClient)await supabaseClient.auth.signOut();});
 </script>
 
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA:",err)));}</script>
 </body></html>
