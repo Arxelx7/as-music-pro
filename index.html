@@ -69,7 +69,13 @@ async function searchOnline(){
   const res=await fetch('https://api.jamendo.com/v3.0/tracks/?'+params.toString());
   const json=await res.json();
   if(!res.ok || json.headers?.status!=='success')throw new Error(json.headers?.error_message||'Erro na pesquisa');
-  onlineTracks=Array.isArray(json.results)?json.results.filter(t=>t.audio):[];
+  const normalizeText=s=>String(s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\\s+/g,' ').trim();
+  const queryTerms=normalizeText(q).split(' ').filter(Boolean);
+  onlineTracks=Array.isArray(json.results)?json.results.filter(t=>{
+   if(!t.audio)return false;
+   const searchable=normalizeText(t.name+' '+t.artist_name);
+   return searchable.includes(normalizeText(q)) || queryTerms.every(term=>searchable.includes(term));
+  }):[];
   out.innerHTML='';
   if(!onlineTracks.length){out.innerHTML='<div class="empty">Não encontrámos faixas disponíveis. Experimenta outro nome ou artista.</div>';return}
   onlineTracks.forEach(t=>{
